@@ -42,11 +42,13 @@ namespace CR_CleanupFileAndNamespaces
         }
         private void CleanupFileAndNamespaces_Execute(ExecuteEventArgs ea)
         {
-            // Store Location
-            CodeRush.Markers.Drop(true);
+            // Store Address
+            var Address = NavigationServices.GetCurrentAddress();
 
             // Find first NamespaceReference
-            ElementEnumerable Enumerable = new ElementEnumerable(CodeRush.Source.ActiveFileNode, LanguageElementType.NamespaceReference, true);
+            ElementEnumerable Enumerable = 
+                new ElementEnumerable(CodeRush.Source.ActiveFileNode, 
+                                      LanguageElementType.NamespaceReference, true);
             NamespaceReference Reference = Enumerable.OfType<NamespaceReference>().FirstOrDefault();
 
             if (Reference == null)
@@ -58,7 +60,8 @@ namespace CR_CleanupFileAndNamespaces
             CodeRush.Caret.MoveTo(Reference.Range.Start);
 
             // Invoke Refactoring.
-            var Refactoring = CodeRush.Refactoring.Get("Optimize Namespace References");
+            RefactoringProviderBase Refactoring = CodeRush.Refactoring.Get("Optimize Namespace References");
+            
             CodeRush.SmartTags.UpdateContext();
             if (Refactoring.IsAvailable)
             {
@@ -70,7 +73,7 @@ namespace CR_CleanupFileAndNamespaces
             CleanupAction.DoExecute();
 
             // Restore Location
-            CodeRush.Markers.Collect();
+            NavigationServices.ResolveAddress(Address).Show();
         }
     }
 }
