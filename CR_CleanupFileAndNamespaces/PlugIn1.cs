@@ -20,60 +20,61 @@ namespace CR_CleanupFileAndNamespaces
             registerCleanupFileAndNamespaces();
         }
         #endregion
-        #region FinalizePlugIn
-        public override void FinalizePlugIn()
-        {
-            //
-            // TODO: Add your finalization code here.
-            //
+        
 
-            base.FinalizePlugIn();
-        }
-        #endregion
         public void registerCleanupFileAndNamespaces()
         {
             DevExpress.CodeRush.Core.Action CleanupFileAndNamespaces = new DevExpress.CodeRush.Core.Action(components);
             ((System.ComponentModel.ISupportInitialize)(CleanupFileAndNamespaces)).BeginInit();
             CleanupFileAndNamespaces.ActionName = "CleanupFileAndNamespaces";
-            CleanupFileAndNamespaces.ButtonText = "CleanupFile And Namespaces"; // Used if button is placed on a menu.
             CleanupFileAndNamespaces.RegisterInCR = true;
             CleanupFileAndNamespaces.Execute += CleanupFileAndNamespaces_Execute;
             ((System.ComponentModel.ISupportInitialize)(CleanupFileAndNamespaces)).EndInit();
         }
+
         private void CleanupFileAndNamespaces_Execute(ExecuteEventArgs ea)
         {
-            // Store Address
-            var Address = NavigationServices.GetCurrentAddress();
-
-            // Find first NamespaceReference
-            ElementEnumerable Enumerable = 
-                new ElementEnumerable(CodeRush.Source.ActiveFileNode, 
-                                      LanguageElementType.NamespaceReference, true);
-            NamespaceReference Reference = Enumerable.OfType<NamespaceReference>().FirstOrDefault();
-
-            if (Reference == null)
+            using (var action = CodeRush.Documents.ActiveTextDocument.NewCompoundAction("Cleanup File and Namespaces"))
             {
-                // No Namespace References to sort.
-                return;
-            }
-            // Move caret       
-            CodeRush.Caret.MoveTo(Reference.Range.Start);
+                // Store Address
+                var Address = NavigationServices.GetCurrentAddress();
 
+                // Find first NamespaceReference
+                ElementEnumerable Enumerable =
+                    new ElementEnumerable(CodeRush.Source.ActiveFileNode,
+                                          LanguageElementType.NamespaceReference, true);
+                NamespaceReference Reference = Enumerable.OfType<NamespaceReference>().FirstOrDefault();
+
+                if (Reference == null)
+                {
+                    // No Namespace References to sort.
+                    return;
+                }
+                // Move caret       
+                CodeRush.Caret.MoveTo(Reference.Range.Start);
+
+                CleanupFile();
+                InvokeRefactoring();
+                // Restore Location
+                NavigationServices.ResolveAddress(Address).Show();
+            }
+        }
+        private static void CleanupFile()
+        {
+            // Cleanup the rest of the file.
+            DevExpress.CodeRush.Core.Action CleanupAction = CodeRush.Actions.Get("CleanupFile");
+            CleanupAction.DoExecute();
+        }
+        private static void InvokeRefactoring()
+        {
             // Invoke Refactoring.
             RefactoringProviderBase Refactoring = CodeRush.Refactoring.Get("Optimize Namespace References");
-            
+
             CodeRush.SmartTags.UpdateContext();
             if (Refactoring.IsAvailable)
             {
                 Refactoring.Execute();
             }
-
-            // Cleanup the rest of the file.            
-            DevExpress.CodeRush.Core.Action CleanupAction = CodeRush.Actions.Get("CleanupFile");
-            CleanupAction.DoExecute();
-
-            // Restore Location
-            NavigationServices.ResolveAddress(Address).Show();
         }
     }
 }
