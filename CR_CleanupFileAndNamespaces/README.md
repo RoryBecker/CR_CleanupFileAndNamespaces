@@ -12,4 +12,6 @@ You will need to bind a shortcut to the '{put in your keystroke combination here
 For example: Devexpress Menu - Options - IDE - ShortCuts, select Code folder, then A* (new shortcut), Key 1: {Ctrl+Alt+C}, Command: CleanupFileAndNamespaces
 
 After installation of the VSIX (restart visual studio)
-  
+   
+
+<!-- updated yardy -->
