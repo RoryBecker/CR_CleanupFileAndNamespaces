@@ -25,3 +25,4 @@
     <MefComponent>|%CurrentProject%|</MefComponent>
   </Content>
 </Vsix>
+<!-- here -->
